@@ -40,6 +40,7 @@ SET( TEST_SRCS
     unit/utTriangulate.cpp
     unit/utVertexTriangleAdjacency.cpp
     unit/utNoBoostTest.cpp
+    unit/utAssimpBone.cpp
 )
 
 SOURCE_GROUP( tests FILES  ${TEST_SRCS} )
