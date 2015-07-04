@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 cmake_minimum_required( VERSION 2.6 )
 
 INCLUDE( AddGTest )
@@ -43,7 +42,7 @@ SET( TEST_SRCS
   	unit/utNoBoostTest.cpp
   	unit/utColladaExportCamera.cpp
   	unit/utColladaExportLight.cpp
-    unit/utAssimpBone.cpp
+    unit/utColladaExportBone.cpp
 )
 
 SOURCE_GROUP( tests FILES  ${TEST_SRCS} )
