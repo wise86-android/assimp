@@ -105,6 +105,9 @@ protected:
     void WriteControllerForMesh(const size_t pIndex);
     void WriteJointsNameSourceNode(const aiMesh*const pMesh);
     void WriteJointsPoseSourceNode(const aiMesh*const pMesh);
+    void WriteJointsWeightSourceNode(const aiMesh*const pMesh);
+    void WriteJointsTag(const aiMesh*const pMesh);
+    void WriteJointsVertexWeight(const aiMesh*const pMesh);
 
     /// Writes the geometry library
     void WriteGeometryLibrary();
@@ -112,7 +115,7 @@ protected:
     /// Writes the given mesh
     void WriteGeometry( size_t pIndex);
 
-    enum FloatDataType { FloatType_Matrix4x4, FloatType_Vector, FloatType_TexCoord2, FloatType_TexCoord3, FloatType_Color };
+    enum FloatDataType { FloatType_Matrix4x4, FloatType_Vector, FloatType_TexCoord2, FloatType_TexCoord3, FloatType_Color, FloatType_Weight };
 
     /// Writes a float array of the given type
     void WriteFloatArray( const std::string& pIdString, FloatDataType pType, const float* pData, size_t pElementCount);
