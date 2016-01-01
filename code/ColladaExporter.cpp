@@ -790,8 +790,8 @@ void ColladaExporter::WriteGeometry( size_t pIndex)
     const std::string idstr = GetMeshId(pIndex);
     const std::string idstrEscaped = XMLEscape(idstr);
 
-  if( mesh->mNumFaces == 0 || mesh->mNumVertices == 0 )
-    return;
+    if( mesh->mNumFaces == 0 || mesh->mNumVertices == 0 )
+        return;
 
     // opening tag
     mOutput << startstr << "<geometry id=\"" << idstrEscaped << "\" name=\"" << idstrEscaped << "_name\" >" << endstr;
@@ -817,7 +817,7 @@ void ColladaExporter::WriteGeometry( size_t pIndex)
     }
 
     // vertex colors
-    for( size_t a = 0; a < AI_MAX_NUMBER_OF_TEXTURECOORDS; ++a)
+    for( size_t a = 0; a < AI_MAX_NUMBER_OF_COLOR_SETS; ++a)
     {
         if( mesh->HasVertexColors( a) )
             WriteFloatArray( idstr + "-color" + boost::lexical_cast<std::string> (a), FloatType_Color, (float*) mesh->mColors[a], mesh->mNumVertices);
@@ -1344,22 +1344,33 @@ void ColladaExporter::WriteNode(aiNode* pNode)
     for( size_t a = 0; a < pNode->mNumMeshes; ++a )
     {
         const aiMesh* mesh = mScene->mMeshes[pNode->mMeshes[a]];
-    // do not instanciate mesh if empty. I wonder how this could happen
-    if( mesh->mNumFaces == 0 || mesh->mNumVertices == 0 )
-        continue;
-    mOutput << startstr << "<instance_geometry url=\"#" << XMLEscape(GetMeshId( pNode->mMeshes[a])) << "\">" << endstr;
-    PushTag();
-    mOutput << startstr << "<bind_material>" << endstr;
-    PushTag();
-    mOutput << startstr << "<technique_common>" << endstr;
-    PushTag();
-    mOutput << startstr << "<instance_material symbol=\"defaultMaterial\" target=\"#" << XMLEscape(materials[mesh->mMaterialIndex].name) << "\" />" << endstr;
+        // do not instanciate mesh if empty. I wonder how this could happen
+        if( mesh->mNumFaces == 0 || mesh->mNumVertices == 0 )
+            continue;
+
+        if (!mesh->HasBones())
+            mOutput << startstr << "<instance_geometry url=\"#" << XMLEscape(GetMeshId( pNode->mMeshes[a])) << "\">" << endstr;
+        else
+        {
+            mOutput << startstr << "<instance_controller url=\"#Armature_" << XMLEscape(GetMeshId( pNode->mMeshes[a])) << "-skin\">" << endstr;
+
+        }
+        PushTag();
+        mOutput << startstr << "<bind_material>" << endstr;
+        PushTag();
+        mOutput << startstr << "<technique_common>" << endstr;
+        PushTag();
+        mOutput << startstr << "<instance_material symbol=\"defaultMaterial\" target=\"#" << XMLEscape(materials[mesh->mMaterialIndex].name) << "\" />" << endstr;
         PopTag();
-    mOutput << startstr << "</technique_common>" << endstr;
-    PopTag();
-    mOutput << startstr << "</bind_material>" << endstr;
-    PopTag();
-        mOutput << startstr << "</instance_geometry>" << endstr;
+        mOutput << startstr << "</technique_common>" << endstr;
+        PopTag();
+        mOutput << startstr << "</bind_material>" << endstr;
+        PopTag();
+
+        if (!mesh->HasBones())
+            mOutput << startstr << "</instance_geometry>" << endstr;
+        else
+            mOutput << startstr << "</instance_controller>" << endstr;
     }
 
     // recurse into subnodes
