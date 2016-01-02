@@ -1293,6 +1293,27 @@ static bool isJointNode(const aiScene *pScene,const aiNode *pNode){
 	return false;
 }
 
+
+int getDepthOfBone(const aiNode* node, int depth)
+{
+    if (node->mParent)
+        return getDepthOfBone(node->mParent, depth + 1);
+    return depth + 1;
+}
+
+const aiNode* ColladaExporter::getRootOfController(const aiMesh* mesh)
+{
+    aiNode* root = mScene->mRootNode;
+    std::multimap<int, aiNode*> controllerBones;
+    for (unsigned int i = 0; i < mesh->mNumBones; ++i)
+    {
+        aiNode* boneNode = root->FindNode(mesh->mBones[i]->mName);
+        int d = getDepthOfBone(boneNode, 0);
+        controllerBones.insert(std::make_pair<int, aiNode*>(d, boneNode));
+    }
+    return controllerBones.begin()->second;
+}
+
 // ------------------------------------------------------------------------------------------------
 // Recursively writes the given node
 void ColladaExporter::WriteNode(aiNode* pNode)
@@ -1309,6 +1330,7 @@ void ColladaExporter::WriteNode(aiNode* pNode)
 
     const std::string node_name_escaped = XMLEscape(pNode->mName.data);
     mOutput << startstr << "<node id=\"" << node_name_escaped << "\""
+            << " sid=\"" << node_name_escaped << "\""
     		<< " name=\"" << node_name_escaped << "\""
     		<< " type=\"" << nodeType <<"\">" << endstr;
     PushTag();
@@ -1353,7 +1375,7 @@ void ColladaExporter::WriteNode(aiNode* pNode)
         else
         {
             mOutput << startstr << "<instance_controller url=\"#Armature_" << XMLEscape(GetMeshId( pNode->mMeshes[a])) << "-skin\">" << endstr;
-
+            mOutput << startstr << "<skeleton>#" << getRootOfController(mesh)->mName.C_Str() << "</skeleton>" << endstr;
         }
         PushTag();
         mOutput << startstr << "<bind_material>" << endstr;
